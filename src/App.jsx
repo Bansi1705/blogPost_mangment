@@ -1,55 +1,80 @@
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./Components/Dashboard";
 import { ToastContainer } from "react-toastify";
-const DefultRouter=()=>{
-    const data=JSON.parse(localStorage.getItem("blog_rdata"))
-    if(data){
-      <Navigate to="/login" replace/>
-    }
-    else{
-      <Navigate to="/register" replace/>
-    }
-  }
-function App() {
+import Dashboard from "./pages/Dashboard";
+import AuthGuard from "./auth/AuthGuard";
+import CreatePost from "./pages/CreatePost";
+const DefultRouter = () => {
+  const data = JSON.parse(localStorage.getItem("blog_rdata"));
   
-
-  const route=createBrowserRouter([
+  if (data) {
+    return <Navigate to="/dashboard" replace />;
+  } else {
+    return <Navigate to="/login" replace />;
+  }
+};
+function App() {
+  const route = createBrowserRouter([
     {
-      path:"/",
-      element:<DefultRouter/>
-    },
-     {
-      path:"/register",
-      element:<Register/>
-    },
-     {
-      path:"/login",
-      element:<Login/>
+      path: "/",
+      element: <DefultRouter />,
     },
     {
-      path:"/dashboard",
-      element:<Dashboard/>
-    }
-  ]
+      path: "/register",
+      element: (
+        <AuthGuard required={false}>
+          <Register />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/login",
+      element: (
+        <AuthGuard required={false}>
+          <Login />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/dashboard",
+      element: (
+        <AuthGuard required={true}>
+          <Dashboard />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/create-post",
+      element: (
+        <AuthGuard required={true}>
+          <CreatePost />
+        </AuthGuard>
+      ),
+    },
+  ]);
+  return (
+    <>
+      <RouterProvider router={route} />
 
-  )
-  return (<>
-  <RouterProvider router={route}/>
-
-  <ToastContainer
-  position="top-right"
-  autoClose={1000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick={false}
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="light"/>
-  </>)
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+    </>
+  );
 }
 
 export default App;
