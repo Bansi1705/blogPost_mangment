@@ -11,7 +11,7 @@ import AuthGuard from "./auth/AuthGuard";
 import CreatePost from "./pages/CreatePost";
 const DefultRouter = () => {
   const data = JSON.parse(localStorage.getItem("blog_rdata"));
-  
+
   if (data) {
     return <Navigate to="/dashboard" replace />;
   } else {
@@ -50,6 +50,14 @@ function App() {
     },
     {
       path: "/create-post",
+      element: (
+        <AuthGuard required={true}>
+          <CreatePost />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: "/edit-post/:id",
       element: (
         <AuthGuard required={true}>
           <CreatePost />
