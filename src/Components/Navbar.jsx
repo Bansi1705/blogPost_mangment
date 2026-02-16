@@ -2,6 +2,7 @@ import React from "react";
 import { FaBlog, FaHome, FaPlusSquare, FaSignOutAlt } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
+import { MdAnalytics } from "react-icons/md";
 import { toast } from "react-toastify";
 
 function Navbar() {
@@ -29,6 +30,10 @@ function Navbar() {
 
           <NavLink to="/create-post" className="nav-item">
             <FaPlusSquare className="nav-icon" /> Create Post
+          </NavLink>
+
+           <NavLink to="/charts" className="nav-item">
+            <MdAnalytics className="nav-icon" /> Analitcs
           </NavLink>
         </div>
         <div className="navbar-actions">

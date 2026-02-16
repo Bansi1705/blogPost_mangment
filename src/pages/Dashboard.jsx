@@ -39,6 +39,9 @@ const Dashboard = () => {
     navigate(`/edit-post/${id}`)
   }
 
+  const handleReadMore=(id)=>{
+    navigate(`/postDetail/${id}`)
+  }
   return (
     <div className="dashboard-page">
       <Navbar />
@@ -119,7 +122,7 @@ const Dashboard = () => {
                   <h3 className="post-card-title">{task.title}</h3>
                   <p className="post-card-description">{task.description}</p>
 
-                  <button className="read-more-btn">Read More</button>
+                  <button className="read-more-btn" onClick={()=>handleReadMore(task.id)}>Read More</button>
                 </div>
               </div>
             ))}
