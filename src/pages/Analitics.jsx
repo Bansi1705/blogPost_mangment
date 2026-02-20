@@ -13,18 +13,68 @@ import {
   YAxis,
 } from "recharts";
 import "./Analytics.css";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Analitics() {
-  const chartData = [
-    { name: "Admin", posts: 5 },
-    { name: "User", posts: 3 },
-    { name: "Test", posts: 4 },
-    { name: "demo", posts: 2 },
-  ];
+  const [tasks, setTasks] = useState([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const postPerPage = 2;
+
+  const indexOfLastPage = currentPage * postPerPage;
+  const indexOfFirstPage = indexOfLastPage - postPerPage;
+  const currentPosts = tasks.slice(indexOfFirstPage, indexOfLastPage);
+  const totalPages = Math.ceil(tasks.length / postPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const autherState=tasks.reduce((acc,post)=>{
+    const author=post.auther || "Unknwon";
+    acc[author]=(acc[author]||0)+1;
+    return acc;
+  },[]);
+
+  const chartData =Object.keys(autherState).map(auther=>({
+    name:auther,
+    posts:autherState[auther]
+  }))
+
+  const navigate = useNavigate();
   const header = ["ID", "Title", "Auther", "Date"];
 
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
+  const fetchData = async () => {
+    try {
+      const responce = await fetch("http://localhost:3000/posts");
+      const data = await responce.json();
+      setTasks(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleEdit = (id) => {
+    navigate(`/edit-post/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`http://localhost:3000/posts/${id}`, {
+        method: "DELETE",
+      });
+
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="analytics-page">
       <Navbar />
@@ -42,7 +92,8 @@ function Analitics() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis />
+                  <XAxis dataKey="name" />
+                  <YAxis/>
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="posts" fill="#8884d8" name="Number of Posts" />
@@ -60,10 +111,13 @@ function Analitics() {
                     data={chartData}
                     cx="50%"
                     cy="50%"
+                    labelLine={false}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="posts"
-                    label
+                    label={({ name, percent }) =>
+                      `${name} ${(percent * 100).toFixed(0)}%`
+                    }
                   >
                     {chartData.map((entry, index) => (
                       <Cell
@@ -86,41 +140,66 @@ function Analitics() {
             <table className="analytics-table">
               <thead>
                 <tr>
-                   {header.map((head)=>(
-                  <th>{head}</th>
-                ))}
+                  {header.map((head) => (
+                    <th>{head}</th>
+                  ))}
                 </tr>
-               
-               
               </thead>
               <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>React Basic</td>
-                  <td>Admin</td>
-                  <td>16/02/2026</td>
-                </tr>
-                <tr>
-                  <td>2</td>
-                  <td>Understanding Hooks</td>
-                  <td>User</td>
-                  <td>15/02/2026</td>
-                </tr>
-                <tr>
-                  <td>3</td>
-                  <td>JavaScript ES6</td>
-                  <td>Test</td>
-                  <td>14/02/2026</td>
-                </tr>
+                {currentPosts.map((task) => (
+                  <tr key={task.id}>
+                    <td>{task.id}</td>
+                    <td>{task.title}</td>
+                    <td>{task.auther}</td>
+                    <td>
+                      {new Date(task.createdAt).toLocaleDateString("en-IN")}
+                    </td>
+                    <td className="action-bttons">
+                      <button
+                        className="edit-btn"
+                        onClick={() => handleEdit(task.id)}
+                        title="Edit"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(task.id)}
+                        title="Delete"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
           <div className="pagination">
-            <button className="page-btn">Previuos</button>
-            <button className="page-btn">1</button>
-            <button className="page-btn">2</button>
-            <button className="page-btn">3</button>
-            <button className="page-btn">Next</button>
+            <button
+              className="page-btn"
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            {[...Array(totalPages).keys()].map((number) => (
+              <button
+                key={number + 1}
+                onClick={() => paginate(number + 1)}
+                className={`page-btn ${currentPage === number + 1 ? "active" : ""}`}
+              >
+                {number + 1}
+              </button>
+            ))}
+
+            <button
+              className="page-btn"
+              onClick={() => paginate(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
           </div>
         </div>
       </main>

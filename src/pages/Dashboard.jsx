@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaStar } from "react-icons/fa";
 import { MdDelete, MdEdit } from "react-icons/md";
 import "./Dashboard.css";
-import Navbar from "../Components/Navbar";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../Components/Navbar";
+import { toast } from "react-toastify";
+
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
 
   const navigate = useNavigate();
-
+  const [favorites, setFavorites] = useState([]);
   const fetchData = async () => {
     try {
       const fData = await fetch("http://localhost:3000/posts");
@@ -21,6 +23,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchData();
+    const savedFav = JSON.parse(localStorage.getItem("favorites")) || [];
+    setFavorites(savedFav);
   }, []);
 
   const handleDelete = async (id) => {
@@ -35,13 +39,26 @@ const Dashboard = () => {
     }
   };
 
-  const handleEdit=(id)=>{
-    navigate(`/edit-post/${id}`)
-  }
+  const handleEdit = (id) => {
+    navigate(`/edit-post/${id}`);
+  };
 
-  const handleReadMore=(id)=>{
-    navigate(`/postDetail/${id}`)
-  }
+  const handleReadMore = (id) => {
+    navigate(`/postDetail/${id}`);
+  };
+
+  const toggleFavorite = (postId) => {
+    let newFavorites;
+    if (favorites.includes(postId)) {
+      newFavorites = favorites.filter((id) => id !== postId);
+      toast.info("Removed from favorites");
+    } else {
+      newFavorites = [...favorites, postId];
+      toast.success("Added to favorites!");
+    }
+    setFavorites(newFavorites);
+    localStorage.setItem("favorites", JSON.stringify(newFavorites));
+  };
   return (
     <div className="dashboard-page">
       <Navbar />
@@ -60,12 +77,12 @@ const Dashboard = () => {
         <div className="dashboard-status-overview">
           <div className="dash-card">
             <h3>Total Posts</h3>
-            <span className="dash-number">10</span>
+            <span className="dash-number">{tasks.length}</span>
           </div>
 
           <div className="dash-card">
             <h3>Your Stories</h3>
-            <span className="dash-number">5</span>
+            <span className="dash-number"></span>
           </div>
 
           <div className="dash-card">
@@ -97,10 +114,23 @@ const Dashboard = () => {
                     alt="Post"
                     className="post-card-image"
                   />
+                 
 
                   <div className="post-actions">
+                    <button
+                    className={`favorite-btn ${
+                      favorites.includes(task.id) ? "active" : ""
+                    }`}
+                    onClick={() => toggleFavorite(task.id)}
+                  >
+                    <FaStar size={22} />
+                  </button>
                     <button className="action-btn edit-btn" title="Edit Post">
-                      <MdEdit size={22} color="#ffffff"  onClick={() => handleEdit(task.id)}/>
+                      <MdEdit
+                        size={22}
+                        color="#ffffff"
+                        onClick={() => handleEdit(task.id)}
+                      />
                     </button>
 
                     <button
@@ -122,7 +152,12 @@ const Dashboard = () => {
                   <h3 className="post-card-title">{task.title}</h3>
                   <p className="post-card-description">{task.description}</p>
 
-                  <button className="read-more-btn" onClick={()=>handleReadMore(task.id)}>Read More</button>
+                  <button
+                    className="read-more-btn"
+                    onClick={() => handleReadMore(task.id)}
+                  >
+                    Read More
+                  </button>
                 </div>
               </div>
             ))}

@@ -12,6 +12,7 @@ import CreatePost from "./pages/CreatePost";
 import { PostDetails } from "./pages/PostDetails";
 import Charts from "./pages/Analitics";
 import Analitics from "./pages/Analitics";
+import { Favorites } from "./pages/Favorites";
 const DefultRouter = () => {
   const data = JSON.parse(localStorage.getItem("blog_rdata"));
 
@@ -75,11 +76,20 @@ function App() {
         </AuthGuard>
       ),
     },
+    
     {
       path: "/charts",
       element: (
         <AuthGuard required={true}>
           <Analitics />
+        </AuthGuard>
+      ),
+    },
+      {
+      path: "/favorites",
+      element: (
+        <AuthGuard required={true}>
+          <Favorites />
         </AuthGuard>
       ),
     },
